@@ -1,0 +1,33 @@
+// Unambiguous calculator grammar, lowest precedence first.
+//
+//   exp   : binary + and -      (left associative)
+//   exp1  : binary *            (left associative)
+//   exp2  : prefix - and log    (prefix operators, nest to the right)
+//   exp3  : binary ^            (right associative)
+//   exp4  : numbers and ( )     (atoms)
+//
+// Rules starting with "?" are inlined by Lark when they have a single child,
+// so the tree only contains the labelled nodes (plus, minus, times, ...).
+
+?start: exp
+
+?exp: exp "+" exp1              -> plus
+    | exp "-" exp1              -> minus
+    | exp1
+
+?exp1: exp1 "*" exp2            -> times
+     | exp2
+
+?exp2: "-" exp2                 -> neg
+     | "log" exp "base" exp2    -> log
+     | exp3
+
+?exp3: exp4 "^" exp2            -> power
+     | exp4
+
+?exp4: NUMBER                   -> num
+     | "(" exp ")"
+
+%import common.NUMBER
+%import common.WS_INLINE
+%ignore WS_INLINE
